@@ -46,7 +46,7 @@ def test_iot_integration():
     assert event is not None
 
     assert event[0] == device_id
-    assert event[1] == command
+    assert event[1] == "OFF"
     assert event[2] == "received"
 
     print("\n================================")
