@@ -76,3 +76,40 @@ jobs:
             device.log
             api.log
             iot.db
+  hil:
+    needs: test
+    runs-on: [self-hosted, windows, x64]
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Install Python dependency
+        run: |
+          python -m pip install pyserial
+
+      - name: Build ESP32 firmware
+        working-directory: esp32-hil-demo
+        run: |
+          pio run
+
+      - name: Flash ESP32
+        working-directory: esp32-hil-demo
+        run: |
+          pio run -t upload
+
+      - name: Wait for ESP32
+        run: |
+          Start-Sleep -Seconds 3
+
+      - name: Run HIL test
+        working-directory: esp32-hil-demo
+        run: |
+          python hil_test.py
+
+      - name: Upload firmware
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32-hil-firmware
+          path: esp32-hil-demo/.pio/build/esp32-s3/firmware.bin
