@@ -9,7 +9,6 @@ on:
     branches:
       - main
 
-
 jobs:
 
   test:
@@ -46,7 +45,7 @@ jobs:
 
       - name: Start API
         run: |
-          nohup uvicorn app.api:app --host 0.0.0.0 --port 8000 > api.log 2>&1 &
+          nohup uvicorn app.api:app --host 127.0.0.1 --port 8000 > api.log 2>&1 &
 
       - name: Wait for services
         run: |
@@ -54,7 +53,19 @@ jobs:
 
       - name: Run integration tests
         run: |
-          pytest -v -s
+          python -m pytest -v -s tests/test_integration.py
+
+      - name: Create release package
+        if: success()
+        run: |
+          zip -r iot-cicd-demo.zip app tests requirements.txt
+
+      - name: Upload release package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iot-cicd-release
+          path: iot-cicd-demo.zip
 
       - name: Upload test logs
         if: always()
